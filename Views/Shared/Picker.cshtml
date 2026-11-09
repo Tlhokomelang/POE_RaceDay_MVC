@@ -1,0 +1,44 @@
+@* Event chooser used by Categories, Enrolments and Results when no event is selected yet *@
+@model EventPickerViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewData["Subtitle"] = Model.Subtitle;
+}
+@section HeaderActions {
+    <a class="btn btn-light" asp-controller="OrganiserEvents" asp-action="Create">Create event</a>
+}
+
+@if (!Model.Events.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-calendar-plus"></i></div>
+        <h3>No events yet</h3>
+        <p class="text-muted">Create your first event and it will appear here.</p>
+        <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create">Create an event</a>
+    </div>
+}
+else
+{
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Enrolments</th><th scope="col"><span class="visually-hidden">Action</span></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var ev in Model.Events)
+                {
+                    <tr>
+                        <td><strong>@ev.EventName</strong><div class="text-muted small">@ev.Location</div></td>
+                        <td>@UiHelpers.LongDate(ev.EventDate)</td>
+                        <td class="num">@ev.EnrolmentCount</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-primary" asp-controller="@Model.Controller" asp-action="Index" asp-route-eventId="@ev.EventID">@Model.ButtonText</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

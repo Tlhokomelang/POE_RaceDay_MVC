@@ -1,0 +1,55 @@
+@model List<MyResult>
+@{
+    ViewData["Title"] = "My results";
+    ViewData["Subtitle"] = "Your personal race history across completed events.";
+    int finished = Model.Count(r => r.ResultID.HasValue);
+}
+
+@if (!Model.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-stopwatch"></i></div>
+        <h3>No race history yet</h3>
+        <p class="text-muted">Once an event you entered has finished and the organiser publishes results, they'll appear here.</p>
+        <a class="btn btn-primary" asp-controller="Participant" asp-action="Enrolments">See my enrolments</a>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">@Model.Count</div><div class="stat-label">Completed events</div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-tile"><div class="stat-value">@finished</div><div class="stat-label">Results published</div></div></div>
+    </div>
+
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Category</th><th scope="col">Finish time</th><th scope="col">Position</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td><strong>@r.EventName</strong><div class="text-muted small">@r.Location</div></td>
+                        <td>@UiHelpers.ShortDate(r.EventDate)</td>
+                        <td>@r.CategoryName <span class="text-muted">(@UiHelpers.Km(r.Distance))</span></td>
+                        @if (r.ResultID.HasValue && r.Position.HasValue)
+                        {
+                            <td><span class="finish-time">@r.FinishTime</span></td>
+                            <td>
+                                <span class="position">@UiHelpers.Ordinal(r.Position.Value)</span>
+                                <span class="text-muted small d-block">out of @r.TotalFinishers @(r.TotalFinishers == 1 ? "finisher" : "finishers")</span>
+                            </td>
+                        }
+                        else
+                        {
+                            <td colspan="2"><span class="status status-neutral">Awaiting results</span></td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

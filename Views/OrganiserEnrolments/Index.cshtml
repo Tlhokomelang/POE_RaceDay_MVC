@@ -1,0 +1,65 @@
+@model EnrolmentsPageViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = "Enrolments";
+    ViewData["Subtitle"] = $"{ev.EventName}, {UiHelpers.ShortDate(ev.EventDate)}. Everyone who has entered this event.";
+    int confirmed = Model.Enrolments.Count(e => e.Status == "Confirmed");
+    int pending = Model.Enrolments.Count(e => e.Status == "Pending");
+    int cancelled = Model.Enrolments.Count(e => e.Status == "Cancelled");
+}
+@section HeaderActions {
+    <a class="btn btn-outline-light" asp-action="Index" asp-route-eventId="">Change event</a>
+    <a class="btn btn-light" asp-controller="OrganiserResults" asp-action="Index" asp-route-eventId="@ev.EventID">Results</a>
+}
+
+<div class="d-flex flex-wrap gap-2 mb-3" aria-label="Enrolment totals">
+    <span class="status status-confirmed">@confirmed Confirmed</span>
+    <span class="status status-pending">@pending Pending</span>
+    <span class="status status-cancelled">@cancelled Cancelled</span>
+</div>
+
+@if (!Model.Enrolments.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-people"></i></div>
+        <h3>No enrolments yet</h3>
+        <p class="text-muted mb-0">When participants enrol, they'll appear here.</p>
+    </div>
+}
+else
+{
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr><th scope="col">Participant</th><th scope="col">Contact</th><th scope="col">Category</th><th scope="col">Enrolled</th><th scope="col">Status</th><th scope="col">Update status</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model.Enrolments)
+                {
+                    <tr>
+                        <td><strong>@e.ParticipantName</strong></td>
+                        <td>@e.ParticipantEmail<div class="text-muted small">@e.ParticipantPhone</div></td>
+                        <td>@e.CategoryName <span class="text-muted">(@UiHelpers.Km(e.Distance))</span></td>
+                        <td>@UiHelpers.ShortDate(e.EnrolmentDate)</td>
+                        <td><partial name="_StatusBadge" model="e.Status" /></td>
+                        <td>
+                            <form asp-action="SetStatus" method="post" class="d-flex gap-1 flex-wrap">
+                                <input type="hidden" name="enrolmentId" value="@e.EnrolmentID" />
+                                <input type="hidden" name="eventId" value="@ev.EventID" />
+                                @foreach (var s in new[] { "Confirmed", "Pending", "Cancelled" })
+                                {
+                                    if (s != e.Status)
+                                    {
+                                        <button type="submit" name="status" value="@s" class="btn btn-sm btn-outline-primary">@s</button>
+                                    }
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

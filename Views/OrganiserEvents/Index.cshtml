@@ -1,0 +1,53 @@
+@model List<OrganiserEvent>
+@{
+    ViewData["Title"] = "Manage events";
+    ViewData["Subtitle"] = "Create, edit and remove your events.";
+}
+@section HeaderActions {
+    <a class="btn btn-light" asp-action="Create">Create event</a>
+}
+
+@if (!Model.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-calendar-plus"></i></div>
+        <h3>No events yet</h3>
+        <p class="text-muted">Create an event and it will show up here.</p>
+        <a class="btn btn-primary" asp-action="Create">Create an event</a>
+    </div>
+}
+else
+{
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr><th scope="col"><span class="visually-hidden">Banner</span></th><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Type</th><th scope="col">Distance</th><th scope="col">Categories</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var ev in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(ev.BannerImage)) { <img class="thumb" src="@UiHelpers.Media(ev.BannerImage)" alt="" loading="lazy" /> }
+                            else { <span class="thumb thumb-placeholder" aria-hidden="true"></span> }
+                        </td>
+                        <td><strong>@ev.EventName</strong><div class="text-muted small">@ev.Location</div></td>
+                        <td>@UiHelpers.LongDate(ev.EventDate)</td>
+                        <td>@ev.EventType</td>
+                        <td class="num">@UiHelpers.Km(ev.Distance)</td>
+                        <td class="num">@ev.CategoryCount</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@ev.EventID">Edit</a>
+                            <form asp-action="Delete" method="post" class="d-inline" data-confirm="Delete “@ev.EventName”? This also removes its categories, enrolments and results.">
+                                <input type="hidden" name="id" value="@ev.EventID" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

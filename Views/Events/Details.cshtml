@@ -1,0 +1,113 @@
+@model EventDetailsViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.EventName;
+    ViewData["Subtitle"] = $"{UiHelpers.LongDate(ev.EventDate)} at {ev.Location}";
+}
+@section HeaderActions {
+    <a class="btn btn-outline-light" asp-controller="Home" asp-action="Index">All events</a>
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="event-banner event-banner-lg mb-4 @(string.IsNullOrEmpty(ev.BannerImage) ? "is-placeholder" : "")">
+            @if (!string.IsNullOrEmpty(ev.BannerImage))
+            {
+                <img src="@UiHelpers.Media(ev.BannerImage)" alt="Banner for @ev.EventName" />
+            }
+        </div>
+
+        <div class="rd-card rd-card-body mb-4">
+            <h2 class="rd-card-title">About this event</h2>
+            @if (string.IsNullOrWhiteSpace(ev.Description))
+            {
+                <p class="text-muted mb-0">The organiser hasn't added a description yet.</p>
+            }
+            else
+            {
+                <p class="mb-0" style="white-space: pre-line;">@ev.Description</p>
+            }
+        </div>
+
+        <div class="rd-card">
+            <div class="panel-head"><h2>Categories</h2></div>
+            @if (!ev.Categories.Any())
+            {
+                <div class="rd-card-body text-muted">No categories have been added yet. Check back soon.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table rd-table">
+                        <thead><tr><th scope="col">Category</th><th scope="col">Distance</th><th scope="col">Entry fee</th><th scope="col">Entered</th></tr></thead>
+                        <tbody>
+                        @foreach (var c in ev.Categories)
+                        {
+                            <tr>
+                                <td><strong>@c.CategoryName</strong></td>
+                                <td class="num">@UiHelpers.Km(c.Distance)</td>
+                                <td class="num">@UiHelpers.Fee(c.EntryFee)</td>
+                                <td class="num">@c.EnrolmentCount</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="rd-card rd-card-body mb-4">
+            <h3 class="rd-card-title">Event details</h3>
+            <div class="meta"><i class="bi bi-calendar-event" aria-hidden="true"></i> @UiHelpers.LongDate(ev.EventDate)</div>
+            <div class="meta"><i class="bi bi-geo-alt" aria-hidden="true"></i> @ev.Location</div>
+            <div class="meta"><i class="bi bi-signpost-split" aria-hidden="true"></i> @UiHelpers.Km(ev.Distance) @ev.EventType</div>
+            <div class="meta"><i class="bi bi-person-badge" aria-hidden="true"></i> Organised by @ev.OrganiserName</div>
+        </div>
+
+        <div class="rd-card rd-card-body">
+            <h3 class="rd-card-title">Enrol</h3>
+            @if (Model.ExistingEnrolment != null)
+            {
+                <p>You're enrolled in <strong>@Model.ExistingEnrolment.CategoryName</strong>.</p>
+                <partial name="_StatusBadge" model="Model.ExistingEnrolment.Status" />
+                <div class="mt-3"><a asp-controller="Participant" asp-action="Enrolments">See my enrolments</a></div>
+            }
+            else if (Model.IsPast)
+            {
+                <p class="text-muted mb-0">This event has already taken place, so enrolment is closed.</p>
+            }
+            else if (!ev.Categories.Any())
+            {
+                <p class="text-muted mb-0">Enrolment opens once the organiser adds categories.</p>
+            }
+            else
+            {
+                <form asp-controller="Events" asp-action="Enrol" method="post">
+                    <input type="hidden" name="eventId" value="@ev.EventID" />
+                    <fieldset>
+                        <legend class="form-label fs-6">Choose your category</legend>
+                        <div class="d-grid gap-2 mb-3">
+                            @foreach (var c in ev.Categories)
+                            {
+                                <label class="cat-option">
+                                    <input type="radio" name="categoryId" value="@c.CategoryID" required />
+                                    <span class="cat-card">
+                                        <span>
+                                            <span class="cat-name d-block">@c.CategoryName</span>
+                                            <span class="text-muted small">@UiHelpers.Km(c.Distance)</span>
+                                        </span>
+                                        <span class="cat-fee">@UiHelpers.Fee(c.EntryFee)</span>
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary w-100">Enrol now</button>
+                    <p class="form-text mt-2 mb-0">Your place is recorded straight away. The organiser then confirms it.</p>
+                </form>
+            }
+        </div>
+    </div>
+</div>

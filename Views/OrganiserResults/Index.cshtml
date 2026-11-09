@@ -1,0 +1,72 @@
+@model ResultsPageViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = "Results";
+    ViewData["Subtitle"] = $"{ev.EventName}, {UiHelpers.ShortDate(ev.EventDate)}. Capture finish times and positions, then publish.";
+}
+@section HeaderActions {
+    <a class="btn btn-outline-light" asp-action="Index" asp-route-eventId="">Change event</a>
+}
+
+@if (!Model.EventHasConcluded)
+{
+    <div class="alert alert-info" role="status">
+        This event takes place on @UiHelpers.LongDate(ev.EventDate). Results can be entered once it has concluded.
+    </div>
+}
+else if (!Model.Enrolments.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-people"></i></div>
+        <h3>No participants to score</h3>
+        <p class="text-muted mb-0">Nobody is enrolled in this event.</p>
+    </div>
+}
+else
+{
+    <form asp-action="Save" method="post" novalidate>
+        <input type="hidden" name="eventId" value="@ev.EventID" />
+        <div class="rd-card">
+            <div class="panel-head">
+                <h2>Finishers</h2>
+                <span class="text-muted small">Time as hh:mm:ss. Position is within the participant's category.</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table rd-table">
+                    <thead>
+                        <tr><th scope="col">Participant</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Finish time</th><th scope="col">Position</th><th scope="col">Published</th></tr>
+                    </thead>
+                    <tbody>
+                    @for (int i = 0; i < Model.Enrolments.Count; i++)
+                    {
+                        var e = Model.Enrolments[i];
+                        var row = Model.Rows[i];
+                        <tr>
+                            <td>
+                                <strong>@e.ParticipantName</strong>
+                                <input type="hidden" name="rows[@i].EnrolmentID" value="@e.EnrolmentID" />
+                            </td>
+                            <td>@e.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="e.Status" /></td>
+                            <td style="min-width: 9rem;">
+                                <label class="visually-hidden" for="time-@i">Finish time for @e.ParticipantName</label>
+                                <input id="time-@i" name="rows[@i].FinishTime" value="@row.FinishTime" class="form-control num" placeholder="00:28:35" inputmode="numeric" maxlength="8" />
+                            </td>
+                            <td style="min-width: 7rem;">
+                                <label class="visually-hidden" for="pos-@i">Position for @e.ParticipantName</label>
+                                <input id="pos-@i" name="rows[@i].Position" value="@row.Position" type="number" min="1" class="form-control num" />
+                            </td>
+                            <td>
+                                @if (e.ResultID.HasValue) { <span class="status status-confirmed">Published</span> }
+                                else { <span class="status status-neutral">Not yet</span> }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-4">Publish results</button>
+        <span class="text-muted ms-2">Rows left blank are skipped.</span>
+    </form>
+}

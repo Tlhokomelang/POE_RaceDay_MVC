@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = "Access denied";
+    ViewData["NoHeader"] = true;
+}
+<div class="rd-card empty-state mx-auto" style="max-width: 640px;">
+    <div class="icon" aria-hidden="true"><i class="bi bi-slash-circle"></i></div>
+    <h2 class="mb-2">That's off limits</h2>
+    <p class="text-muted mb-4">Your account doesn't have access to that page.</p>
+    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Take me home</a>
+</div>

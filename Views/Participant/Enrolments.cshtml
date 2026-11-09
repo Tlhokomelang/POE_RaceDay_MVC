@@ -1,0 +1,58 @@
+@model List<MyEnrolment>
+@{
+    ViewData["Title"] = "My enrolments";
+    ViewData["Subtitle"] = "Every event you've entered and where each entry stands.";
+}
+@section HeaderActions {
+    <a class="btn btn-light" asp-controller="Home" asp-action="Index">Find events</a>
+}
+
+@if (!Model.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-ticket-perforated"></i></div>
+        <h3>You haven't enrolled in anything yet</h3>
+        <p class="text-muted">Browse upcoming events and pick your first start line.</p>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Browse events</a>
+    </div>
+}
+else
+{
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Event</th><th scope="col">Date</th><th scope="col">Category</th>
+                        <th scope="col">Enrolled on</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model)
+                {
+                    bool upcoming = e.EventDate > DateTime.UtcNow;
+                    <tr>
+                        <td>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@e.EventID"><strong>@e.EventName</strong></a>
+                            <div class="text-muted small">@e.Location</div>
+                        </td>
+                        <td>@UiHelpers.LongDate(e.EventDate)</td>
+                        <td>@e.CategoryName <span class="text-muted">(@UiHelpers.Km(e.Distance))</span></td>
+                        <td>@UiHelpers.ShortDate(e.EnrolmentDate)</td>
+                        <td><partial name="_StatusBadge" model="e.Status" /></td>
+                        <td class="text-end">
+                            @if (upcoming)
+                            {
+                                <form asp-action="Withdraw" method="post" data-confirm="Withdraw from @e.EventName?" class="d-inline">
+                                    <input type="hidden" name="id" value="@e.EnrolmentID" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Withdraw</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

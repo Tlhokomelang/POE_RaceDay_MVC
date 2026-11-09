@@ -1,0 +1,24 @@
+@model EventSummary
+<article class="rd-card event-card">
+    <div class="event-banner @(string.IsNullOrEmpty(Model.BannerImage) ? "is-placeholder" : "")">
+        @if (!string.IsNullOrEmpty(Model.BannerImage))
+        {
+            <img src="@UiHelpers.Media(Model.BannerImage)" alt="Banner for @Model.EventName" loading="lazy" />
+        }
+        <div class="date-tab" aria-hidden="true">
+            <span class="day">@Model.EventDate.ToString("dd")</span>
+            <span class="month">@Model.EventDate.ToString("MMM")</span>
+        </div>
+    </div>
+    <div class="card-content">
+        <h3><a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventID">@Model.EventName</a></h3>
+        <div class="meta"><i class="bi bi-geo-alt" aria-hidden="true"></i> @Model.Location</div>
+        <div class="meta"><i class="bi bi-clock" aria-hidden="true"></i> @UiHelpers.LongDate(Model.EventDate)</div>
+        <div class="d-flex flex-wrap gap-2 my-3">
+            <span class="chip chip-dark">@Model.EventType</span>
+            <span class="chip">@UiHelpers.Km(Model.Distance)</span>
+            <span class="chip">@Model.CategoryCount @(Model.CategoryCount == 1 ? "category" : "categories")</span>
+        </div>
+        <a class="btn btn-primary mt-auto align-self-start" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventID">View event</a>
+    </div>
+</article>

@@ -1,0 +1,71 @@
+@model LandingViewModel
+@{
+    ViewData["Title"] = "RaceDay";
+    ViewData["NoHeader"] = true;
+}
+
+<div style="margin: -1.5rem calc(50% - 50vw) 0;">
+    <section class="hero" aria-labelledby="heroTitle">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7">
+                    <h1 id="heroTitle"><span>Your next</span><span class="hero-accent">start line</span><span>is waiting.</span></h1>
+                    <p>Find road runs, trail races and rides near you, enrol in minutes and keep every finish time in one place.</p>
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Create a free account</a>
+                        <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Log in</a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="startlist" aria-label="Upcoming events">
+                        <div class="startlist-head">Coming up</div>
+                        @if (Model.NextEvents.Any())
+                        {
+                            foreach (var ev in Model.NextEvents)
+                            {
+                                <div class="startlist-row">
+                                    <div class="startlist-date">@ev.EventDate.ToString("d MMM")</div>
+                                    <div class="flex-grow-1">
+                                        <strong>@ev.EventName</strong>
+                                        <div class="text-muted small">@ev.Location, @UiHelpers.Km(ev.Distance)</div>
+                                    </div>
+                                    <span class="chip">@ev.EventType</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="startlist-row"><span class="text-muted">No events are open yet. Check back soon.</span></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section class="py-4" aria-label="How RaceDay works">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="rd-card feature">
+                <span class="icon" aria-hidden="true"><i class="bi bi-search"></i></span>
+                <h3>Find your race</h3>
+                <p class="text-muted mb-0">Filter upcoming events by type, place, date and distance.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rd-card feature">
+                <span class="icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
+                <h3>Enrol in a tap</h3>
+                <p class="text-muted mb-0">Pick a category, enrol and follow your status until the organiser confirms.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rd-card feature">
+                <span class="icon" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+                <h3>Own your results</h3>
+                <p class="text-muted mb-0">Finish times and positions land in your personal race history.</p>
+            </div>
+        </div>
+    </div>
+</section>

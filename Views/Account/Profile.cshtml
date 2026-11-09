@@ -1,0 +1,64 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "Your profile";
+    ViewData["Subtitle"] = "Keep your details up to date so organisers can reach you.";
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="rd-card rd-card-body text-center">
+            <span class="avatar avatar-lg mb-3">
+                @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                {
+                    <img id="avatarPreview" src="@UiHelpers.Media(Model.ProfilePicture)" alt="Your profile picture" />
+                }
+                else
+                {
+                    <span id="avatarInitials">@UiHelpers.Initials(Model.FullName)</span>
+                    <img id="avatarPreview" alt="Preview of your new profile picture" hidden />
+                }
+            </span>
+            <h3 class="mb-1">@Model.FullName</h3>
+            <p class="text-muted mb-3">@Model.Role</p>
+
+            <form asp-action="ProfilePicture" method="post" enctype="multipart/form-data" class="text-start">
+                <label for="picture" class="form-label">Profile picture</label>
+                <input id="picture" name="picture" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" data-preview="#avatarPreview" data-warning="#pictureWarning" required />
+                <div class="form-text">JPG, PNG, WEBP or GIF, up to 5 MB.</div>
+                <div id="pictureWarning" class="text-danger" role="alert"></div>
+                <button type="submit" class="btn btn-dark w-100 mt-3">Upload picture</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="rd-card rd-card-body">
+            <h2 class="rd-card-title">Personal information</h2>
+            <form asp-action="Profile" method="post" novalidate data-once>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" autocomplete="tel" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="emailReadOnly">Email</label>
+                        <input id="emailReadOnly" class="form-control" value="@Model.Email" readonly />
+                        <div class="form-text">Your email is your login and can't be changed here.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="memberSince">Member since</label>
+                        <input id="memberSince" class="form-control" value="@UiHelpers.ShortDate(Model.MemberSince)" readonly />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-4">Save changes</button>
+            </form>
+        </div>
+    </div>
+</div>

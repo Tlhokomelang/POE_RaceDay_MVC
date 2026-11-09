@@ -1,0 +1,81 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Organiser dashboard";
+    ViewData["Subtitle"] = $"Welcome back, {UiHelpers.FirstName(CurrentUser.Name)}. Here's how your events are shaping up.";
+}
+@section HeaderActions {
+    <a class="btn btn-light" asp-controller="OrganiserEvents" asp-action="Create">Create event</a>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-tile"><div class="stat-value">@Model.Events.Count</div><div class="stat-label">Events created</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-tile"><div class="stat-value">@Model.Upcoming.Count</div><div class="stat-label">Upcoming events</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-tile"><div class="stat-value">@Model.TotalEnrolments</div><div class="stat-label">Total enrolments</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-tile"><div class="stat-value">@Model.TotalPending</div><div class="stat-label">Awaiting confirmation</div></div></div>
+</div>
+
+@if (!Model.Events.Any())
+{
+    <div class="rd-card empty-state">
+        <div class="icon" aria-hidden="true"><i class="bi bi-calendar-plus"></i></div>
+        <h3>Create your first event</h3>
+        <p class="text-muted">Set the date, add categories and open enrolments.</p>
+        <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create">Create an event</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-xl-4">
+            <div class="rd-card h-100">
+                <div class="panel-head"><h2>Upcoming dates</h2></div>
+                @if (!Model.Upcoming.Any())
+                {
+                    <div class="rd-card-body text-muted">Nothing scheduled. Create an event to get going.</div>
+                }
+                else
+                {
+                    foreach (var ev in Model.Upcoming.Take(6))
+                    {
+                        <div class="startlist-row">
+                            <div class="startlist-date">@ev.EventDate.ToString("d MMM")</div>
+                            <div class="flex-grow-1">
+                                <strong>@ev.EventName</strong>
+                                <div class="text-muted small">@UiHelpers.DaysUntil(ev.EventDate), @ev.EnrolmentCount enrolled</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col-xl-8">
+            <div class="rd-card">
+                <div class="panel-head"><h2>All events</h2></div>
+                <div class="table-responsive">
+                    <table class="table rd-table">
+                        <thead>
+                            <tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Enrolments</th><th scope="col">Pending</th><th scope="col">State</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var ev in Model.Events)
+                        {
+                            bool upcoming = ev.EventDate >= DateTime.UtcNow;
+                            <tr>
+                                <td><strong>@ev.EventName</strong><div class="text-muted small">@ev.Location</div></td>
+                                <td>@UiHelpers.ShortDate(ev.EventDate)</td>
+                                <td class="num">@ev.EnrolmentCount</td>
+                                <td class="num">@ev.PendingCount</td>
+                                <td>
+                                    @if (upcoming) { <span class="status status-confirmed">Upcoming</span> }
+                                    else { <span class="status status-neutral">Completed</span> }
+                                </td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@ev.EventID">Enrolments</a></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
